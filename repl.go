@@ -3,14 +3,20 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
 
+type config struct {
+	Previous *string
+	Next *string
+}
 
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommands()
+	conf := &config{}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -27,8 +33,11 @@ func startRepl() {
 			fmt.Println("Unknown command")
 			continue
 		}
-		comm.callback()
 		
+		err := comm.callback(conf)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -41,11 +50,21 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"map": {
+			name:        "map",
+			description: "Get the next page of locations",
+			callback:    commandMapf,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Get the previous page of locations",
+			callback:    commandMapb,
+		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",

@@ -3,9 +3,48 @@ package main
 import (
 	"fmt"
 	"os"
-)
+	"github.com/danilovict2/Pokedexcli/internal/pokeapi"
+	"errors"
+)	
 
-func commandHelp() error {
+
+func commandMapf(conf *config) error {
+	resp, err := pokeapi.GetLocations(conf.Next)
+	if err != nil {
+		return err
+	}
+
+	conf.Next = resp.Next
+	conf.Previous = resp.Previous
+	
+	for _, location := range resp.Results {
+		fmt.Println(location.Name)
+	}
+
+	return nil
+}
+
+func commandMapb(conf *config) error {
+	if conf.Previous == nil {
+		return errors.New("you're on the first page")
+	}
+
+	resp, err := pokeapi.GetLocations(conf.Previous)
+	if err != nil {
+		return err
+	}
+
+	conf.Next = resp.Next
+	conf.Previous = resp.Previous
+	
+	for _, location := range resp.Results {
+		fmt.Println(location.Name)
+	}
+
+	return nil
+}
+
+func commandHelp(conf *config) error {
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -20,7 +59,7 @@ func commandHelp() error {
 	return nil
 }
 
-func commandExit() error {
+func commandExit(conf *config) error {
 	os.Exit(0)
 	return nil
 }
