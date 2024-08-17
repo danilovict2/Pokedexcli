@@ -14,13 +14,15 @@ import (
 type config struct {
 	Previous *string
 	Next *string
+	Cache pokecache.Cache
 }
 
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommands()
-	conf := &config{}
-	cache := pokecache.NewCache(5 * time.Second)
+	conf := &config{
+		Cache: pokecache.NewCache(5 * time.Second),
+	}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -38,7 +40,7 @@ func startRepl() {
 			continue
 		}
 		
-		err := comm.callback(conf, &cache)
+		err := comm.callback(conf)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -54,7 +56,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config, *pokecache.Cache) error
+	callback    func(*config) error
 }
 
 func getCommands() map[string]cliCommand {
