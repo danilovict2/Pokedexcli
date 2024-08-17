@@ -1,15 +1,17 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+
 	"github.com/danilovict2/Pokedexcli/internal/pokeapi"
-	"errors"
+	"github.com/danilovict2/Pokedexcli/internal/pokecache"
 )	
 
 
-func commandMapf(conf *config) error {
-	resp, err := pokeapi.GetLocations(conf.Next)
+func commandMapf(conf *config, c *pokecache.Cache) error {
+	resp, err := pokeapi.GetLocations(conf.Next, c)
 	if err != nil {
 		return err
 	}
@@ -24,12 +26,12 @@ func commandMapf(conf *config) error {
 	return nil
 }
 
-func commandMapb(conf *config) error {
+func commandMapb(conf *config, c *pokecache.Cache) error {
 	if conf.Previous == nil {
 		return errors.New("you're on the first page")
 	}
 
-	resp, err := pokeapi.GetLocations(conf.Previous)
+	resp, err := pokeapi.GetLocations(conf.Previous, c)
 	if err != nil {
 		return err
 	}
@@ -44,7 +46,7 @@ func commandMapb(conf *config) error {
 	return nil
 }
 
-func commandHelp(conf *config) error {
+func commandHelp(conf *config, c *pokecache.Cache) error {
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println("")
@@ -59,7 +61,7 @@ func commandHelp(conf *config) error {
 	return nil
 }
 
-func commandExit(conf *config) error {
+func commandExit(conf *config, c *pokecache.Cache) error {
 	os.Exit(0)
 	return nil
 }

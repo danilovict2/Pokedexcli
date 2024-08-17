@@ -1,37 +1,44 @@
 package pokeapi
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/danilovict2/Pokedexcli/internal/pokecache"
 	"io"
 	"net/http"
-	"fmt"
-	"encoding/json"
 )
 
-func GetLocations(pageURL *string) (RespShallowLocations, error) {
-	url := "https://pokeapi.co/api/v2/location-area";
+func GetLocations(pageURL *string, c *pokecache.Cache) (RespShallowLocations, error) {
+	url := "https://pokeapi.co/api/v2/location-area"
 	if pageURL != nil {
 		url = *pageURL
 	}
 
-	res, err := http.Get(url)
+	data, ok := c.Get(url)
+	if !ok {
+		res, err := http.Get(url)
 
-	if err != nil {
-		return RespShallowLocations{}, err
-	}
+		if err != nil {
+			return RespShallowLocations{}, err
+		}
 
-	body, err := io.ReadAll(res.Body)
-	res.Body.Close()
+		body, err := io.ReadAll(res.Body)
+		res.Body.Close()
 
-	if res.StatusCode > 299 {
-		return RespShallowLocations{}, fmt.Errorf("response failed with status code: %d and\nbody: %s", res.StatusCode, body)
-	}
+		if res.StatusCode > 299 {
+			return RespShallowLocations{}, fmt.Errorf("response failed with status code: %d and\nbody: %s", res.StatusCode, body)
+		}
 
-	if err != nil {
-		return RespShallowLocations{}, err
+		if err != nil {
+			return RespShallowLocations{}, err
+		}
+
+		data = body
+		c.Add(url, data)
 	}
 
 	locations := RespShallowLocations{}
-	json.Unmarshal(body, &locations)
+	json.Unmarshal(data, &locations)
 
 	return locations, nil
 }

@@ -6,6 +6,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
+	
+	"github.com/danilovict2/Pokedexcli/internal/pokecache"
 )
 
 type config struct {
@@ -17,6 +20,7 @@ func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	commands := getCommands()
 	conf := &config{}
+	cache := pokecache.NewCache(5 * time.Second)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -34,7 +38,7 @@ func startRepl() {
 			continue
 		}
 		
-		err := comm.callback(conf)
+		err := comm.callback(conf, &cache)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -50,7 +54,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, *pokecache.Cache) error
 }
 
 func getCommands() map[string]cliCommand {
