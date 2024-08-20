@@ -1,18 +1,42 @@
 package main
 
 import (
+	"math/rand"
 	"errors"
 	"fmt"
 	"os"
 
 	"github.com/danilovict2/Pokedexcli/internal/pokeapi"
-)	
+)
+
+func commandCatch(conf *config, params []string) error {
+	if len(params) == 0 {
+		return errors.New("you must provide a pokemon name")
+	}
+	
+	fmt.Println("Throwing a Pokeball at " + params[0] + "...")
+	pokemon, err := pokeapi.GetPokemonData(params[0])
+
+	if chance := rand.Intn(pokemon.BaseExperience) + 1; chance > 50 {
+		fmt.Println(params[0] + " escaped!")
+		return nil
+	}  
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(pokemon.Name + " was caught!")
+	conf.Pokedex[pokemon.Name] = pokemon
+
+	return nil
+}
 
 func commandExplore(conf *config, params []string) error {
 	if len(params) == 0 {
 		return errors.New("you must provide a location name")
 	}
-	
+
 	fmt.Println("Exploring " + params[0] + "...")
 
 	resp, err := pokeapi.GetLocationAreas(params[0], &conf.Cache)
