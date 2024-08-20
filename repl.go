@@ -40,7 +40,7 @@ func startRepl() {
 			continue
 		}
 		
-		err := comm.callback(conf)
+		err := comm.callback(conf, words[1:])
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -56,11 +56,16 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"explore": {
+			name:        "explore",
+			description: "Shows a list of all the Pokémon in a given area",
+			callback:    commandExplore,
+		},
 		"map": {
 			name:        "map",
 			description: "Get the next page of locations",
